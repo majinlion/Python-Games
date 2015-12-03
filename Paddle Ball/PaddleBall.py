@@ -23,8 +23,6 @@ class Text:
         self.canvas = canvas
         self.id = canvas.create_text(pos_x, pos_y, fill=color, font=("Purisa", size), text="%s" % var_text)
 
-my_score0 = canvas.create_text(80, 80, fill='green', font=("Purisa", 12), text="Points: 0")        
-
 class Ball:
     def __init__(self, canvas, paddle, color):
         self.canvas = canvas
@@ -57,10 +55,8 @@ class Ball:
         if self.hit_paddle(pos) == True:
             global number
             global number2
-            global my_score0
-            canvas.move(my_score0, -1000, -1000)
             number2 += 1
-            my_score0 = canvas("Portal: " + str(number2))
+
             if number >= -5:
                 number -= 0.2
                 self.y = number

@@ -12,7 +12,7 @@ OPTIONS = {
 }
 
 setup(
-    app=['PaddleBall.py'],
+    app=['../PaddleBall.py'],
     options={'py2app': OPTIONS},
     setup_requires=["py2app"],
 )
