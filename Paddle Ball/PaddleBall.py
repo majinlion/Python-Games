@@ -66,6 +66,8 @@ class Ball:
                     number -= 0.2
                     self.y = number
                     self.x = 3
+                else:
+                    self.y = number
             else:
                 self.y = number
         if pos[0] <= 0:
