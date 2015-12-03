@@ -44,9 +44,10 @@ class Ball:
                 return True
         return False
         
-    def draw(self):
+    def draw(self, paddle):
         self.canvas.move(self.id, self.x, self.y)
         pos = self.canvas.coords(self.id)
+        self.paddle = paddle
         if pos[1] <= 0:
             global number
             self.y = abs(number)
@@ -56,10 +57,15 @@ class Ball:
             global number
             global number2
             number2 += 1
-
             if number >= -5:
-                number -= 0.2
-                self.y = number
+                if paddle.x == -2.50:
+                    number -= 0.2
+                    self.y = number
+                    self.x = -3
+                elif paddle.x == 2.50:
+                    number -= 0.2
+                    self.y = number
+                    self.x = 3
             else:
                 self.y = number
         if pos[0] <= 0:
@@ -86,20 +92,20 @@ class Paddle:
             self.x = 0
             
     def turn_left(self, evt):
-        self.x = -2.75
+        self.x = -2.50
     def turn_right(self, evt):
-        self.x = 2.75
+        self.x = 2.50
 
 paddle = Paddle(canvas, 'blue')
 ball = Ball(canvas, paddle, 'orange')
 
 while 1:
     if ball.hit_bottom == False:
-        ball.draw()
+        ball.draw(paddle)
         paddle.draw()
     elif ball.hit_bottom == True and over == True:
-        text = Text(canvas, 250, 100, 20, "red", "Game Over!")
-        text2 = Text(canvas, 250, 120, 14, "green", "Total Points: %s" % str(number2))
+        text = Text(canvas, 250, 100, 20, "Red", "Game Over!")
+        text2 = Text(canvas, 250, 120, 14, "Slate Gray", "Total Points: %s" % str(number2))
         over = False
         
     tk.update_idletasks()
