@@ -17,14 +17,11 @@ tk.update()
 over = True
 number = -3
 number2 = 0
-number3 = 3
 
 class Text:
     def __init__(self, canvas, pos_x, pos_y, size, color, var_text):
         self.canvas = canvas
         self.id = canvas.create_text(pos_x, pos_y, fill=color, font=("Purisa", size), text="%s" % var_text)
-
-Text(canvas, 250, 15, 14, "Slate Gray", "Points: %s" % str(number2))
 
 class Ball:
     def __init__(self, canvas, paddle, color):
@@ -59,24 +56,17 @@ class Ball:
         if self.hit_paddle(pos) == True:
             global number
             global number2
-            global number3
             number2 += 1
             if number >= -5:
                 if paddle.x == -2.50:
                     number -= 0.2
                     self.y = number
                     self.x = -3
-                    self.canvas.itemconfig('1', text="Points: %s" % str(number2))
-                    number3 += 1
                 elif paddle.x == 2.50:
                     number -= 0.2
                     self.y = number
                     self.x = 3
-                    self.canvas.itemconfig('1', text="Points: %s" % str(number2))
-                    number3 += 1
                 else:
-                    self.canvas.itemconfig('1', text="Points: %s" % str(number2))
-                    number3 += 1
                     self.y = number
             else:
                 self.y = number
@@ -116,12 +106,8 @@ while 1:
         ball.draw(paddle)
         paddle.draw()
     elif ball.hit_bottom == True and over == True:
-        Text(canvas, 250, 100, 20, "Red", "Game Over!")
-        Text(canvas, 250, 140, 14, "Green", "To close the game hit the Red/Gray X button.")
-        canvas.itemconfig('1', text="Total Points: %s" % str(number2))
-        canvas.move('1', 0, 106)
-        canvas.move('2', 250, 250)
-        canvas.move('3', 250, 250)
+        text = Text(canvas, 250, 100, 20, "Red", "Game Over!")
+        text2 = Text(canvas, 250, 120, 14, "Slate Gray", "Total Points: %s" % str(number2))
         over = False
         
     tk.update_idletasks()
