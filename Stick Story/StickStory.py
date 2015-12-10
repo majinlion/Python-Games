@@ -5,7 +5,7 @@ import time
 class Game:
     def __init__(self):
         self.tk = Tk()
-        self.tk.title("StickStory")
+        self.tk.title("StickStory - Level 1")
         self.tk.resizable(0, 0)
         self.tk.wm_attributes("-topmost", 1)
         self.canvas = Canvas(self.tk, width=500, height=500, highlightthickness=0)
@@ -122,7 +122,8 @@ class StickFigureSprite(Sprite):
         game.canvas.bind_all('<KeyPress-Left>', self.turn_left)
         game.canvas.bind_all('<KeyPress-Right>', self.turn_right)
         game.canvas.bind_all('<KeyPress-Up>', self.jump)
-        game.canvas.bind_all('<KeyRelease>', self.stop)
+        game.canvas.bind_all('<KeyRelease-Left>', self.stop)
+        game.canvas.bind_all('<KeyRelease-Right>', self.stop)
 
     def turn_left(self, evt):
         if self.y == 0:
@@ -216,19 +217,33 @@ class StickFigureSprite(Sprite):
 
             if bottom and falling and self.y == 0 and co.y2 < self.game.canvas_height and collided_bottom(1, co, sprite_co):
                 falling = False
+                if self.x == 4:
+                    self.x = 0
                 
             if left and self.x < 0 and collided_left(co, sprite_co):
                 self.x = 0
                 left = False
+                if sprite.endgame:
+                    self.game.running = False
 
             if right and self.x > 0 and collided_right(co, sprite_co):
                 self.x = 0
                 right = False
+                if sprite.endgame:
+                    self.game.running = False
             
         if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
             self.y = 4
         
         self.game.canvas.move(self.image, self.x, self.y)
+
+class DoorSprite(Sprite):
+    def __init__(self, game, photo_image, x, y, width, height):
+        Sprite.__init__(self, game)
+        self.photo_image = photo_image
+        self.image = game.canvas.create_image(x, y, image=self.photo_image, anchor='nw')
+        self.coordinates = Coords(x, y, x + (width / 2), y + height)
+        self.endgame = True
 
 g = Game()
 platform1 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 0, 480, 100, 10)
@@ -251,6 +266,8 @@ g.sprites.append(platform7)
 g.sprites.append(platform8)
 g.sprites.append(platform9)
 g.sprites.append(platform10)
+door = DoorSprite(g, PhotoImage(file="door1.gif"), 45, 30, 40, 35)
+g.sprites.append(door)
 sf = StickFigureSprite(g)
 g.sprites.append(sf)
 g.mainloop()
