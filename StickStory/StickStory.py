@@ -147,9 +147,7 @@ class StickFigureSprite(Sprite):
         self.coordinates = Coords()
         game.canvas.bind_all('<KeyPress-Left>', self.turn_left)
         game.canvas.bind_all('<KeyPress-Right>', self.turn_right)
-        game.canvas.bind_all('<space>', self.jump)
-        game.canvas.bind_all('<KeyRelease-Left>', self.stop)
-        game.canvas.bind_all('<KeyRelease-Right>', self.stop)
+        game.canvas.bind_all('<KeyPress-Up>', self.jump)
 
     def stop(self, evt):
         if self.y == 0:
