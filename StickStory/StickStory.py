@@ -1,11 +1,20 @@
-from tkinter import *
+try:
+    from Tkinter import *
+except ImportError:
+    from tkinter import *
+    
 import random
 import time
+
+class Text:
+    def __init__(self, game, pos_x, pos_y, size, color, var_text):
+        self.game = game
+        self.id = self.game.canvas.create_text(pos_x, pos_y, fill=color, font=("Purisa", size), text="%s" % var_text)
 
 class Game:
     def __init__(self):
         self.tk = Tk()
-        self.tk.title("StickStory - Level 1")
+        self.tk.title("StickStory")
         self.tk.resizable(0, 0)
         self.tk.wm_attributes("-topmost", 1)
         self.canvas = Canvas(self.tk, width=500, height=500, highlightthickness=0)
@@ -95,7 +104,8 @@ class PlatformSprite(Sprite):
     def __init__(self, game, photo_image, x, y, width, height):
         Sprite.__init__(self, game)
         self.photo_image = photo_image
-        self.image = game.canvas.create_image(x, y, image=self.photo_image, anchor='nw')
+        self.image = game.canvas.create_rectangle(0, 0, width, height, fill='gray')
+        game.canvas.move(self.image, x, y)
         self.coordinates = Coords(x, y, x + width, y + height)
 
 class MovingPlatformSprite(PlatformSprite):
@@ -231,13 +241,19 @@ class StickFigureSprite(Sprite):
             if top and self.y < 0 and collided_top(co, sprite_co):
                 self.y = -self.y
                 top = False
+                if sprite.endgame:
+                    self.game.running = False
+                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
                 
             if bottom and self.y > 0 and collided_bottom(self.y, co, sprite_co):
                 self.y = sprite_co.y1 - co.y2
                 if self.y < 0:
-                    self.y = 0
+                    self.y = 0 
                 bottom = False
                 top = False
+                if sprite.endgame:
+                    self.game.running = False
+                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
 
             if bottom and falling and self.y == 0 and co.y2 < self.game.canvas_height and collided_bottom(1, co, sprite_co):
                 falling = False
@@ -249,12 +265,14 @@ class StickFigureSprite(Sprite):
                 left = False
                 if sprite.endgame:
                     self.game.running = False
+                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
 
             if right and self.x > 0 and collided_right(co, sprite_co):
                 self.x = 0
                 right = False
                 if sprite.endgame:
                     self.game.running = False
+                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
             
         if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
             self.y = 4
@@ -270,15 +288,65 @@ class DoorSprite(Sprite):
         self.endgame = True
 
 class EraserSprite(Sprite):
-    def __init__(self, game, x, y, width, height, color):
-        Sprite.__init__(self, game)
-        self.id = game.canvas.create_rectangle(0, 0, width, height, fill=color)
-        game.canvas.move(self.id, x, y)
-        self.coordinates = Coords(x, y, x + (width / 2), y + height)
+    def __init__(self, game, color, x_pos, y_pos, width, height):
+        self.game = game
+        self.id = self.game.canvas.create_oval(10, 10, 25, 25, fill=color)
+        self.game.canvas.move(self.id, x_pos, y_pos)
+        self.width = width
+        self.height = height
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.x = 1.5
+        self.y = 1.5
+        self.coordinates = Coords(self.x_pos, self.y_pos, self.x_pos + self.width, self.y_pos + self.height)
+        self.endgame = True
+        
+    def coords(self):
+        xy = list(self.game.canvas.coords(self.id))
+        self.coordinates.x1 = xy[0]
+        self.coordinates.y1 = xy[1]
+        self.coordinates.x2 = xy[0] + 20
+        self.coordinates.y2 = xy[1] + 16
+        return self.coordinates
+        
+    def move(self):
+        co = self.coords()
+        
+        if self.y > 0 and co.y2 >= 500:
+            self.y = -1.5
+        elif self.y < 0 and co.y1 <= 0:
+            self.y = 1.5
+
+        if self.x > 0 and co.x2 >= 500:
+            self.x = -1.5
+        elif self.x < 0 and co.x1 <= 0:
+            self.x = 1.5
+
+        for sprite in self.game.sprites:
+            if sprite == self:
+                continue
+            sprite_co = sprite.coords()
+            
+            if self.y < 0 and collided_top(co, sprite_co):
+                self.y = 1.5
+                
+            if self.y > 0 and collided_bottom(self.y, co, sprite_co):
+                self.y = sprite_co.y1 - co.y2
+                if self.y < 0:
+                    self.y = -1.5 
+                
+            if self.x < 0 and collided_left(co, sprite_co):
+                self.x = -1.5
+
+            if self.x > 0 and collided_right(co, sprite_co):
+                self.x = 1.5
+            
+        if self.y == 0 and co.y2 < 500:
+            self.y = 1.5
+        
+        self.game.canvas.move(self.id, self.x, self.y)
 
 g = Game()
-#e = EraserSprite(g, 170, 415, 10, 25, 'pink')
-#g.sprites.append(e)
 platform1 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 0, 480, 100, 10)
 platform2 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 150, 440, 100, 10)
 platform3 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 300, 400, 100, 10)
@@ -301,6 +369,8 @@ g.sprites.append(platform9)
 g.sprites.append(platform10)
 door = DoorSprite(g, PhotoImage(file="door1.gif"), 45, 30, 40, 35)
 g.sprites.append(door)
+eraser = EraserSprite(g, 'pink', 245, 100, 25, 25)
+g.sprites.append(eraser)
 sf = StickFigureSprite(g)
 g.sprites.append(sf)
 g.mainloop()
