@@ -288,9 +288,9 @@ class DoorSprite(Sprite):
         self.endgame = True
 
 class EraserSprite(Sprite):
-    def __init__(self, game, color, x_pos, y_pos, width, height):
+    def __init__(self, game, color, x_pos, y_pos, height, width):
         self.game = game
-        self.id = self.game.canvas.create_oval(10, 10, 25, 25, fill=color)
+        self.id = self.game.canvas.create_oval(10, 10, height, width, fill=color)
         self.game.canvas.move(self.id, x_pos, y_pos)
         self.width = width
         self.height = height
