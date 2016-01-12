@@ -15,7 +15,7 @@ canvas.pack()
 tk.update()
 
 number = -3
-number2 = 0
+mypoints = 0
 
 class Text:
     def __init__(self, canvas, pos_x, pos_y, size, color, var_text):
@@ -42,32 +42,31 @@ class Ball:
             if pos[3] >= paddle_pos[1] and pos[3] <= paddle_pos[3]:
                 return True
         return False
-        
+
     def draw(self, paddle):
+	global number
+	global mypoints
         self.canvas.move(self.id, self.x, self.y)
         pos = self.canvas.coords(self.id)
         self.paddle = paddle
         if pos[1] <= 0:
-            global number
             self.y = abs(number)
         if pos[3] >= self.canvas_height:
             self.hit_bottom = True
         if self.hit_paddle(pos) == True:
-            global number
-            global number2
-            number2 += 1
+            mypoints += 1
             if paddle.x == -2.50:
                 number -= 0.2
                 self.y = number
                 self.x = -3
-                self.canvas.itemconfig(points.id, text="Points: %s" % str(number2))
+                self.canvas.itemconfig(points.id, text="Points: %s" % str(mypoints))
             elif paddle.x == 2.50:
                 number -= 0.2
                 self.y = number
                 self.x = 3
-                self.canvas.itemconfig(points.id, text="Points: %s" % str(number2))
+                self.canvas.itemconfig(points.id, text="Points: %s" % str(mypoints))
             else:
-                self.canvas.itemconfig(points.id, text="Points: %s" % str(number2))
+                self.canvas.itemconfig(points.id, text="Points: %s" % str(mypoints))
                 self.y = number
         if pos[0] <= 0:
             self.x = 3
@@ -91,7 +90,7 @@ class Paddle:
             self.x = 0
         elif pos[2] >= self.canvas_width:
             self.x = 0
-            
+
     def turn_left(self, evt):
         self.x = -2.50
     def turn_right(self, evt):
@@ -100,7 +99,7 @@ class Paddle:
 paddle = Paddle(canvas, 'blue')
 ball = Ball(canvas, paddle, 'orange')
 
-points = Text(canvas, 250, 15, 14, "Slate Gray", "Points: %s" % str(number2))
+points = Text(canvas, 250, 15, 14, "Slate Gray", "Points: %s" % str(mypoints))
 arrow_left = Text(canvas, 50, 15, 12, "Gray", "Arrow Left: Left")
 arrow_right = Text(canvas, 442, 15, 12, "Gray", "Arrow Right: Right")
 
@@ -111,11 +110,11 @@ while 1:
     elif ball.hit_bottom == True:
         Text(canvas, 250, 100, 20, "Red", "Game Over!")
         Text(canvas, 250, 140, 14, "Green", "To close the game hit the Red/Gray X button, then hit Terminate.")
-        canvas.itemconfig(points.id, text="Total Points: %s" % str(number2))
+        canvas.itemconfig(points.id, text="Total Points: %s" % str(mypoints))
         canvas.move(points.id, 0, 106)
         canvas.move(arrow_left.id, 1000, 1000)
         canvas.move(arrow_right.id, 1000, 1000)
         ball.hit_bottom = None
-    
+
     tk.update_idletasks()
     tk.update()
