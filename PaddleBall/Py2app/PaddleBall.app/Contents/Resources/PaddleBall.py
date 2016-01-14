@@ -9,7 +9,7 @@ import time
 tk = Tk()
 tk.title("PaddleBall")
 tk.resizable(0, 0)
-tk.wm_attributes("-topmost", 1)
+#tk.wm_attributes("-topmost", 1)
 canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
@@ -82,6 +82,7 @@ class Paddle:
         self.canvas_width = self.canvas.winfo_width()
         self.canvas.bind_all('<KeyPress-Left>', self.turn_left)
         self.canvas.bind_all('<KeyPress-Right>', self.turn_right)
+	self.canvas.bind_all('<Key-p>', self.pause)
 
     def draw(self):
         self.canvas.move(self.id, self.x, 0)
@@ -95,6 +96,11 @@ class Paddle:
         self.x = -2.50
     def turn_right(self, evt):
         self.x = 2.50
+    def pause(self, evt):
+	if ball.hit_bottom == False:
+            ball.hit_bottom = None
+	elif ball.hit_bottom == None:
+	    ball.hit_bottom = False
 
 paddle = Paddle(canvas, 'blue')
 ball = Ball(canvas, paddle, 'orange')
