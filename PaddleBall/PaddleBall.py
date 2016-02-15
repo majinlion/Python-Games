@@ -2,20 +2,19 @@ try:
     from Tkinter import *
 except ImportError:
     from tkinter import *
-
 import random
 import time
 
 tk = Tk()
 tk.title("PaddleBall")
 tk.resizable(0, 0)
-#tk.wm_attributes("-topmost", 1)
 canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
 
 number = -3
 mypoints = 0
+mtext = "Pause: p"
 
 class Text:
     def __init__(self, canvas, pos_x, pos_y, size, color, var_text):
@@ -97,17 +96,24 @@ class Paddle:
     def turn_right(self, evt):
         self.x = 2.50
     def pause(self, evt):
+	global mtext
 	if ball.hit_bottom == False:
             ball.hit_bottom = None
 	elif ball.hit_bottom == None:
 	    ball.hit_bottom = False
 
+        if mtext == "Pause: p":
+	    mtext = "Paused"
+	    canvas.itemconfig(menu.id, fill="Red", text="%s" % mtext)
+	elif mtext == "Paused":
+	    mtext = "Pause: p"
+	    canvas.itemconfig(menu.id, fill="Slate Gray", text="%s" % mtext)
+
 paddle = Paddle(canvas, 'blue')
 ball = Ball(canvas, paddle, 'orange')
 
-points = Text(canvas, 250, 15, 14, "Slate Gray", "Points: %s" % str(mypoints))
-arrow_left = Text(canvas, 50, 15, 12, "Gray", "Arrow Left: Left")
-arrow_right = Text(canvas, 442, 15, 12, "Gray", "Arrow Right: Right")
+points = Text(canvas, 38, 15, 14, "Slate Gray", "Points: %s" % str(mypoints))
+menu = Text(canvas, 462, 15, 14, "Slate Gray", "%s" % mtext)
 
 while 1:
     if ball.hit_bottom == False:
@@ -115,11 +121,10 @@ while 1:
         paddle.draw()
     elif ball.hit_bottom == True:
         Text(canvas, 250, 100, 20, "Red", "Game Over!")
-        Text(canvas, 250, 140, 14, "Green", "To close the game hit the Red/Gray X button, then hit Terminate.")
+        Text(canvas, 250, 138, 14, "Green", "To close the game hit the Red/Gray X button, then hit Terminate.")
         canvas.itemconfig(points.id, text="Total Points: %s" % str(mypoints))
-        canvas.move(points.id, 0, 106)
-        canvas.move(arrow_left.id, 1000, 1000)
-        canvas.move(arrow_right.id, 1000, 1000)
+        canvas.move(points.id, 212, 106)
+        canvas.move(menu.id, 1000, 1000)
         ball.hit_bottom = None
 
     tk.update_idletasks()
