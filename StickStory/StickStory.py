@@ -2,7 +2,7 @@ try:
     from Tkinter import *
 except ImportError:
     from tkinter import *
-    
+
 import random
 import time
 
@@ -30,6 +30,7 @@ class Game:
                 self.canvas.create_image(x * w, y * h, image=self.bg, anchor='nw')
         self.sprites = []
         self.running = True
+        self.text = None
 
     def mainloop(self):
         while 1:
@@ -124,7 +125,7 @@ class MovingPlatformSprite(PlatformSprite):
         self.coordinates.x2 = xy[0] + self.width
         self.coordinates.y2 = xy[1] + self.height
         return self.coordinates
-    
+
     def move(self):
         if time.time() - self.last_time > 0.03:
             self.last_time = time.time()
@@ -159,10 +160,6 @@ class StickFigureSprite(Sprite):
         game.canvas.bind_all('<KeyPress-Right>', self.turn_right)
         game.canvas.bind_all('<KeyPress-Up>', self.jump)
 
-    def stop(self, evt):
-        if self.y == 0:
-            self.x = 0
-
     def turn_left(self, evt):
         if self.y == 0:
             self.x = -2
@@ -175,7 +172,7 @@ class StickFigureSprite(Sprite):
         if self.y == 0:
             self.y = -4
             self.jump_count = 0
-            
+
     def animate(self):
         if self.x != 0 and self.y == 0:
             if time.time() - self.last_time > 0.1:
@@ -203,7 +200,7 @@ class StickFigureSprite(Sprite):
         self.coordinates.x2 = xy[0] + 27
         self.coordinates.y2 = xy[1] + 30
         return self.coordinates
-        
+
     def move(self):
         self.animate()
         if self.y < 0:
@@ -212,14 +209,14 @@ class StickFigureSprite(Sprite):
                 self.y = 4
         if self.y > 0:
             self.jump_count -= 1
-            
+
         co = self.coords()
         left = True
         right = True
         top = True
         bottom = True
         falling = True
-        
+
         if self.y > 0 and co.y2 >= self.game.canvas_height:
             self.y = 0
             bottom = False
@@ -241,42 +238,36 @@ class StickFigureSprite(Sprite):
             if top and self.y < 0 and collided_top(co, sprite_co):
                 self.y = -self.y
                 top = False
-                if sprite.endgame:
-                    self.game.running = False
-                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
-                
+
             if bottom and self.y > 0 and collided_bottom(self.y, co, sprite_co):
                 self.y = sprite_co.y1 - co.y2
                 if self.y < 0:
-                    self.y = 0 
+                    self.y = 0
                 bottom = False
                 top = False
-                if sprite.endgame:
-                    self.game.running = False
-                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
 
             if bottom and falling and self.y == 0 and co.y2 < self.game.canvas_height and collided_bottom(1, co, sprite_co):
                 falling = False
                 if self.x == 4:
                     self.x = 0
-                
+
             if left and self.x < 0 and collided_left(co, sprite_co):
                 self.x = 0
                 left = False
                 if sprite.endgame:
                     self.game.running = False
-                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
+                    self.game.text = Text(self.game, 250, 80, 18, "Gray", "Congrats! You Won!")
 
             if right and self.x > 0 and collided_right(co, sprite_co):
                 self.x = 0
                 right = False
                 if sprite.endgame:
                     self.game.running = False
-                    Text(self.game, 250, 80, 18, "Red", "Game Over!")
-            
+                    self.game.text = Text(self.game, 250, 80, 18, "Gray", "Congrats! You Won!")
+
         if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
             self.y = 4
-        
+
         self.game.canvas.move(self.image, self.x, self.y)
 
 class DoorSprite(Sprite):
@@ -299,8 +290,8 @@ class EraserSprite(Sprite):
         self.x = 1.5
         self.y = 1.5
         self.coordinates = Coords(self.x_pos, self.y_pos, self.x_pos + self.width, self.y_pos + self.height)
-        self.endgame = True
-        
+        self.endgame = False
+
     def coords(self):
         xy = list(self.game.canvas.coords(self.id))
         self.coordinates.x1 = xy[0]
@@ -308,10 +299,10 @@ class EraserSprite(Sprite):
         self.coordinates.x2 = xy[0] + 20
         self.coordinates.y2 = xy[1] + 16
         return self.coordinates
-        
+
     def move(self):
         co = self.coords()
-        
+
         if self.y > 0 and co.y2 >= 500:
             self.y = -1.5
         elif self.y < 0 and co.y1 <= 0:
@@ -326,24 +317,24 @@ class EraserSprite(Sprite):
             if sprite == self:
                 continue
             sprite_co = sprite.coords()
-            
+
             if self.y < 0 and collided_top(co, sprite_co):
                 self.y = 1.5
-                
+
             if self.y > 0 and collided_bottom(self.y, co, sprite_co):
                 self.y = sprite_co.y1 - co.y2
                 if self.y < 0:
-                    self.y = -1.5 
-                
+                    self.y = -1.5
+
             if self.x < 0 and collided_left(co, sprite_co):
                 self.x = -1.5
 
             if self.x > 0 and collided_right(co, sprite_co):
                 self.x = 1.5
-            
+
         if self.y == 0 and co.y2 < 500:
             self.y = 1.5
-        
+
         self.game.canvas.move(self.id, self.x, self.y)
 
 g = Game()
