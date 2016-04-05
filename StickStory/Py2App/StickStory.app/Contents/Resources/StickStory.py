@@ -16,7 +16,6 @@ class Game:
         self.tk = Tk()
         self.tk.title("StickStory")
         self.tk.resizable(0, 0)
-        self.tk.wm_attributes("-topmost", 1)
         self.canvas = Canvas(self.tk, width=500, height=500, highlightthickness=0)
         self.canvas.pack()
         self.tk.update()
@@ -31,6 +30,7 @@ class Game:
         self.sprites = []
         self.running = True
         self.text = None
+	self.lpoints = 5000
 
     def mainloop(self):
         while 1:
@@ -102,16 +102,15 @@ class Sprite:
         return self.coordinates
 
 class PlatformSprite(Sprite):
-    def __init__(self, game, photo_image, x, y, width, height):
+    def __init__(self, game, x, y, width, height):
         Sprite.__init__(self, game)
-        self.photo_image = photo_image
         self.image = game.canvas.create_rectangle(0, 0, width, height, fill='gray')
         game.canvas.move(self.image, x, y)
         self.coordinates = Coords(x, y, x + width, y + height)
 
 class MovingPlatformSprite(PlatformSprite):
-    def __init__(self, game, photo_image, x, y, width, height):
-        PlatformSprite.__init__(self, game, photo_image, x, y, width, height)
+    def __init__(self, game, x, y, width, height):
+        PlatformSprite.__init__(self, game, x, y, width, height)
         self.x = 2
         self.counter = 0
         self.last_time = time.time()
@@ -136,7 +135,7 @@ class MovingPlatformSprite(PlatformSprite):
                 self.counter = 0
 
 class StickFigureSprite(Sprite):
-    def __init__(self, game):
+    def __init__(self, game, lpoints):
         Sprite.__init__(self, game)
         self.images_left = [
             PhotoImage(file="stick-L1.gif"),
@@ -254,18 +253,20 @@ class StickFigureSprite(Sprite):
             if left and self.x < 0 and collided_left(co, sprite_co):
                 self.x = 0
                 left = False
-                if sprite.endgame:
+		if sprite.endgame:
+		    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "You Won; Points: %s" % self.game.lpoints)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
                     self.game.running = False
-                    self.game.text = Text(self.game, 250, 80, 18, "Gray", "Congrats! You Won!")
-		    Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
 
             if right and self.x > 0 and collided_right(co, sprite_co):
                 self.x = 0
                 right = False
                 if sprite.endgame:
-                    self.game.running = False
-                    self.game.text = Text(self.game, 250, 80, 18, "Gray", "Congrats! You Won!")
-		    Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+                    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "You Won; Points: %s" % self.game.points)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+		    self.game.running = False
 
         if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
             self.y = 4
@@ -281,7 +282,7 @@ class DoorSprite(Sprite):
         self.endgame = True
 
 class EraserSprite(Sprite):
-    def __init__(self, game, color, x_pos, y_pos, height, width):
+    def __init__(self, game, lpoints, color, x_pos, y_pos, height, width):
         self.game = game
         self.id = self.game.canvas.create_oval(10, 10, height, width, fill=color)
         self.game.canvas.move(self.id, x_pos, y_pos)
@@ -303,6 +304,7 @@ class EraserSprite(Sprite):
         return self.coordinates
 
     def move(self):
+        global lpoints
         co = self.coords()
 
         if self.y > 0 and co.y2 >= 500:
@@ -322,17 +324,49 @@ class EraserSprite(Sprite):
 
             if self.y < 0 and collided_top(co, sprite_co):
                 self.y = 1.5
+                self.game.lpoints -= 125
+                self.game.canvas.itemconfig(points.id, text="Points: %s" % self.game.lpoints)
+                if self.game.lpoints == 0:
+                    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "Game Over; Points: %s" % self.game.lpoints)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+                    self.endgame = True
+                    self.game.running = False
 
             if self.y > 0 and collided_bottom(self.y, co, sprite_co):
                 self.y = sprite_co.y1 - co.y2
+                self.game.lpoints -= 125
+                self.game.canvas.itemconfig(points.id, text="Points: %s" % self.game.lpoints)
                 if self.y < 0:
                     self.y = -1.5
+                if self.game.lpoints == 0:
+                    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "Game Over; Points: %s" % self.game.lpoints)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+                    self.endgame = True
+                    self.game.running = False
 
             if self.x < 0 and collided_left(co, sprite_co):
                 self.x = -1.5
+                self.game.lpoints -= 125
+                self.game.canvas.itemconfig(points.id, text="Points: %s" % self.game.lpoints)
+                if self.game.lpoints == 0:
+                    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "Game Over; Points: %s" % self.game.lpoints)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+                    self.endgame = True
+                    self.game.running = False
 
             if self.x > 0 and collided_right(co, sprite_co):
                 self.x = 1.5
+                self.game.lpoints -= 125
+		self.game.canvas.itemconfig(points.id, text="Points: %s" % self.game.lpoints)
+                if self.game.lpoints == 0:
+                    self.game.canvas.move(points.id, 1000, 1000)
+                    self.game.text = Text(self.game, 250, 80, 18, "Black", "Game Over; Points: %s" % self.game.lpoints)
+                    self.game.text = Text(self.game, 250, 98, 14, "Red", "To close the game hit the Red/Gray X button, then hit Terminate.")
+                    self.endgame = True
+                    self.game.running = False
 
         if self.y == 0 and co.y2 < 500:
             self.y = 1.5
@@ -340,16 +374,17 @@ class EraserSprite(Sprite):
         self.game.canvas.move(self.id, self.x, self.y)
 
 g = Game()
-platform1 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 0, 480, 100, 10)
-platform2 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 150, 440, 100, 10)
-platform3 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 300, 400, 100, 10)
-platform4 = PlatformSprite(g, PhotoImage(file="platform1.gif"), 300, 160, 100, 10)
-platform5 = MovingPlatformSprite(g, PhotoImage(file="platform2.gif"), 175, 350, 66, 10)
-platform6 = PlatformSprite(g, PhotoImage(file="platform2.gif"), 50, 300, 66, 10)
-platform7 = PlatformSprite(g, PhotoImage(file="platform2.gif"), 170, 120, 66, 10)
-platform8 = PlatformSprite(g, PhotoImage(file="platform2.gif"), 45, 60, 66, 10)
-platform9 = MovingPlatformSprite(g, PhotoImage(file="platform3.gif"), 170, 250, 32, 10)
-platform10 = PlatformSprite(g, PhotoImage(file="platform3.gif"), 230, 200, 32, 10)
+points = Text(g, 50, 15, 14, "Black", "Points: %s" % g.lpoints)
+platform1 = PlatformSprite(g, 0, 480, 100, 10)
+platform2 = PlatformSprite(g, 150, 440, 100, 10)
+platform3 = PlatformSprite(g, 300, 400, 100, 10)
+platform4 = PlatformSprite(g, 300, 160, 100, 10)
+platform5 = MovingPlatformSprite(g, 175, 350, 66, 10)
+platform6 = PlatformSprite(g, 50, 300, 66, 10)
+platform7 = PlatformSprite(g, 170, 120, 66, 10)
+platform8 = PlatformSprite(g, 45, 60, 66, 10)
+platform9 = MovingPlatformSprite(g, 170, 250, 32, 10)
+platform10 = PlatformSprite(g, 230, 200, 32, 10)
 g.sprites.append(platform1)
 g.sprites.append(platform2)
 g.sprites.append(platform3)
@@ -362,8 +397,8 @@ g.sprites.append(platform9)
 g.sprites.append(platform10)
 door = DoorSprite(g, PhotoImage(file="door1.gif"), 45, 30, 40, 35)
 g.sprites.append(door)
-eraser = EraserSprite(g, 'pink', 245, 100, 25, 25)
+eraser = EraserSprite(g, g.lpoints, 'pink', 265, 100, 25, 25)
 g.sprites.append(eraser)
-sf = StickFigureSprite(g)
+sf = StickFigureSprite(g, g.lpoints)
 g.sprites.append(sf)
 g.mainloop()
