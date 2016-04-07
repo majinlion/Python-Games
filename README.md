@@ -1,3 +1,13 @@
-# Python-Games
-A place where you can see my work and give me pointers on what I could do better with Python.
-And, if there is a project you want to see worked on, I can give it a try.
+Python-Games
+============
+My first video games built from the bottom up.
+
+Version
+-------
+1.3.5
+
+License
+-------
+[Owen Donckers]
+
+[Owen Donckers]:https://github.com/odonckers/Python-Games/blob/master/LICENSE.md
